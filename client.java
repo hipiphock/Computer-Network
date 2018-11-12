@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
  * Test client for Blocking IO server
  *
  */
-public class TestClient {
+public class client {
 	public static void main(String[] args) throws IOException {
 
 		Runnable client = new Runnable() {

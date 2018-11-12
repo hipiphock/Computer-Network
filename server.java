@@ -10,7 +10,7 @@ import java.net.Socket;
  * Simple Blocking IO Server
  *
  */
-public class EchoIOServer {
+public class server {
 
 	public static void main(String[] args) throws IOException {
 
