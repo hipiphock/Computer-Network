@@ -9,7 +9,11 @@ public class Server{
 
     public static final String DEFAULT_IP = "127.0.0.1";
     public static final int DEFAULT_PORTNUM = 2020;
+    public static final String DEFAULT_FILE_PATH = "";
     public static final int BUFFER_SIZE = 4096;
+
+    public static DataInputStream fromClient;
+    public static DataOutputStream toClient;
     public static void main(String[] args) {
         
         // initial setup
@@ -23,10 +27,13 @@ public class Server{
         // connect
         ServerSocket welcomeSocket = new ServerSocket();
 
+        FileTransmitter fileTransmitter;
+
         while(true){
             Socket connSocket = welcomeSocket.accept();
-            DataInputStream fromClient = new DataInputStream(connSocket.getInputStream());
-            DataOutputStream toClient = new DataOutputStream(connSocket.getOutputStream());
+            
+            fromClient = new DataInputStream(connSocket.getInputStream());
+            toClient = new DataOutputStream(connSocket.getOutputStream());
             
             String clientCommand = fromClient.readLine();
             String command = clientCommand.split("\\s")[0];
@@ -57,37 +64,84 @@ public class Server{
                     toClient.writeBytes(strToSend);
                     break;
                 case GET:
-                    File file = new File(argument);
-                    if(!file.exist()){
-                        toClient.writeBytes("Such file does not exist!\n");
-                    }
-                    else{
-                        
-                    }
+                    fileTransmitter.fileSender(argument);
                     break;
                 case PUT:
-                    File file = new File(argument);
-                    if(file.exists()){
-                        toClient.writeBytes("file already exist!\n");
-                    }
-                    else {
-                        FileOutputStream fileReceived = new FileOutputStream(argument);
-                        byte[] buffer = new byte[BUFFER_SIZE];
-                        int count;
-                        while((count = fromClient.read(buffer)) > 0){
-                            fileReceived.write(buffer, 0, count);
-                        }
-                        fileReceived.close();
-                    }
+                    fileTransmitter.fileReceiver(argument);
                     break;
                 case CD:
-                    
+                    if(argument == null){
+
+                    }
+                    else{
+
+                    }
                     break;
                 case QUIT:
                     System.exit(0);
                 default:
                     System.out.println("wrong input");
                     break;
+            }
+        }
+    }
+    
+    public class FileTransmitter{
+
+        int status;
+        int fileSize;
+        File file;
+        FileInputStream fileReceived;
+        FileOutputStream fileToSend;
+
+        public FileTransmitter(){
+
+        }
+
+        public void listSender(String pathname){
+
+        }
+
+        public void fileReceiver(String pathname){
+            file = File(pathname);
+            if(file.exists()){
+                status = -1;
+                toClient.writeInt(status);
+                toClient.writeBytes("File already exist\n.");
+            }
+            else{
+                status = 1;
+                toClient.writeInt(status);
+                fileSize = fromClient.readInt();
+                fileReceived = new FileOutputStream(pathname);
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int count;
+                while((count = fromClient.read(buffer)) > 0){
+                    fileReceived.write(buffer, 0, count);
+                }
+                toClient.writeBytes(pathname + " transferred/ " + fileSize + "bytes\n");
+            }
+        }
+
+        public void fileSender(String filename){
+            file = new File(filename);
+            if(!file.exists()){
+                status = -1;
+                toClient.writeInt(status);
+                toClient.writeBytes("Such file does not exist!\n");
+            }
+            else{
+                status = 1;
+                toClient.writeInt(status);
+                fileSize = file.length();
+                toClient.writeInt(fileSize);
+                fileToSend = new FileInputStream(filename);
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int count;
+                while((count = fileToSend.read(buffer)) > 0){
+                    toClient.write(bytes, 0, count);
+                }
+                toClient.writeBytes("Received " + filename + "/ " + fileSize + "bytes\n");
             }
         }
     }
