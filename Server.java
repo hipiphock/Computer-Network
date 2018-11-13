@@ -1,7 +1,9 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.Math;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -13,26 +15,29 @@ public class Server{
     public static String DEFAULT_FILE_PATH = "/home/hingook/ftp/";
     // hingook can be changed to your username
 
+    public static String host;
+    public static int portNumber;
+
     public static DataInputStream fromClient;
     public static DataOutputStream toClient;
+
     public static void main(String[] args) {
         
         // initial setup
-        ip = new String(DEFAULT_IP);
+        host = new String(DEFAULT_IP);
         if(args.length == 0){
             portNumber = DEFAULT_PORTNUM;
         } else {
-            portNumber = args[0];
+            portNumber = Integer.parseInt(args[0]);
         }
         
         // connect
         ServerSocket welcomeSocket = new ServerSocket();
 
-        FileTransmitter fileTransmitter;
-
         while(true){
             Socket connSocket = welcomeSocket.accept();
-            
+            fileTransmitter = new FileTransmitter();
+
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
             
@@ -41,22 +46,19 @@ public class Server{
             String argument = clientCommand.split("\\s")[1];
 
             switch(command){
-                case null:
-                    System.out.println("wrong input");
-                    break;
-                case LIST:
+                case "LIST":
                     fileTransmitter.sendFileList(argument);
                     break;
-                case GET:
+                case "GET":
                     fileTransmitter.fileSender(argument);
                     break;
-                case PUT:
+                case "PUT":
                     fileTransmitter.fileReceiver(argument);
                     break;
-                case CD:
-
+                case "CD":
+                    fileTransmitter.changeDir(argument);
                     break;
-                case QUIT:
+                case "QUIT":
                     System.exit(0);
                 default:
                     System.out.println("wrong input");
@@ -70,8 +72,8 @@ public class Server{
         int status;
         int fileSize;
         File file;
-        FileInputStream fileReceived;
-        FileOutputStream fileToSend;
+        FileInputStream fileToSend;
+        FileOutputStream fileReceived;
 
         public FileTransmitter(){
             status = 0;
@@ -118,7 +120,7 @@ public class Server{
         }
 
         public void sendFileList(String pathname){
-            file = new File(argument);
+            file = new File(pathname);
             if(!file.exists()){
                 status = -1;
                 toClient.writeInt(status);
@@ -127,9 +129,9 @@ public class Server{
             else{
                 status = 1;
                 toClient.writeInt(status);
-                String[] fileList = dir.list();
-                File[] files = dir.listFiles();
-                String strToSend;
+                String[] fileList = file.list();
+                File[] files = file.listFiles();
+                String strToSend = new String();
                 for(File fileidx: files){
                     String str = file.getName();
 
@@ -150,7 +152,7 @@ public class Server{
 
         public void fileReceiver(String pathname){
             pathname = DEFAULT_FILE_PATH + pathname;
-            file = File(pathname);
+            file = new File(pathname);
             if(file.exists()){
                 status = -1;
                 toClient.writeInt(status);
@@ -180,13 +182,13 @@ public class Server{
             else{
                 status = 1;
                 toClient.writeInt(status);
-                fileSize = file.length();
+                fileSize = Math.toIntExact(file.length());
                 toClient.writeInt(fileSize);
                 fileToSend = new FileInputStream(filename);
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int count;
                 while((count = fileToSend.read(buffer)) > 0){
-                    toClient.write(bytes, 0, count);
+                    toClient.write(buffer, 0, count);
                 }
                 toClient.writeBytes("Received " + filename + "/ " + fileSize + "bytes\n");
             }
