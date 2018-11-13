@@ -11,8 +11,9 @@ public class Client{
 
     public static final String DEFAULT_IP = "127.0.0.1";
     public static final int DEFAULT_PORTNUM = 2020;
-    public static final String DEFAULT_FILE_PATH = "";
     public static final int BUFFER_SIZE = 4096;
+    public static String DEFAULT_FILE_PATH = "/home/hingook/ftp/";
+    // hingook can be changed to your username
 
     public static String host;
     public static int portNumber;
@@ -52,9 +53,7 @@ public class Client{
                     System.out.println("wrong input");
                     break;
                 case LIST:
-                    toServer.writeBytes(userCommand);
-                    printValue = fromServer.readLine();
-                    System.out.println(printValue);
+                    fileTransmitter.sendListRequest(argument);
                     break;
                 case GET:
                     fileTransmitter.fileReceiver(argument);
@@ -63,7 +62,7 @@ public class Client{
                     fileTransmitter.fileSender(argument);
                     break;
                 case CD:
-                    toServer.writeBytes(userCommand);
+                    fileTransmitter.changeDir(argument);
                     break;
                 case QUIT:
                     clientSocket.close();
@@ -84,7 +83,37 @@ public class Client{
         FileOutputStream fileToSend;
 
         public FileTransmitter(){
+            status = 0;
+            fileSize = 0;
+            file = null;
+        }
 
+        
+        public void changeDir(String pathname){
+            toServer.writeBytes("CD " + pathname);
+            status = fromServer.readInt();
+            if(status < 0){
+                // error
+                System.out.println(fromServer.readLine());
+            }
+            else{
+                fileSize = fromServer.readInt();
+                DEFAULT_FILE_PATH = fromServer.readLine();
+                System.out.println(DEFAULT_FILE_PATH);
+            }
+        }
+
+        public void sendListRequest(String pathname){
+            toServer.writeBytes("LIST " + pathname);
+            status = fromServer.readInt();
+            if(status < 0){
+                // error
+                System.out.println(fromServer.readLine());
+            }
+            else{
+                fileSize = fromServer.readInt();
+                System.out.println(fromServer.readLine());
+            }
         }
 
         public void fileReceiver(String pathname){
@@ -92,6 +121,7 @@ public class Client{
             status = fromServer.readInt();
             if(status < 0){
                 // error
+                System.out.println(fromServer.readLine());
             }
             else{
                 fileSize = fromServer.readInt();
@@ -114,6 +144,7 @@ public class Client{
             status = fromServer.readInt();
             if(status < 0){
                 // error
+                System.out.println(fromServer.readLine());
             }
             else{
                 fileSize = file.length();

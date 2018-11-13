@@ -9,8 +9,9 @@ public class Server{
 
     public static final String DEFAULT_IP = "127.0.0.1";
     public static final int DEFAULT_PORTNUM = 2020;
-    public static final String DEFAULT_FILE_PATH = "";
     public static final int BUFFER_SIZE = 4096;
+    public static String DEFAULT_FILE_PATH = "/home/hingook/ftp/";
+    // hingook can be changed to your username
 
     public static DataInputStream fromClient;
     public static DataOutputStream toClient;
@@ -44,24 +45,7 @@ public class Server{
                     System.out.println("wrong input");
                     break;
                 case LIST:
-                    File dir = new File(argument);
-                    String[] fileList = dir.list();
-                    File[] files = dir.listFiles();
-                    String strToSend;
-                    for(File file: files){
-                        String str = file.getName();
-
-                        if(file.isDirectory()){
-                            strToSend += str;
-                            strToSend += ", - \n";
-                        } else {
-                            strToSend += str;
-                            strToSend += ", ";
-                            strToSend += file.length();
-                            strToSend += "\n";
-                        }
-                    }
-                    toClient.writeBytes(strToSend);
+                    fileTransmitter.sendFileList(argument);
                     break;
                 case GET:
                     fileTransmitter.fileSender(argument);
@@ -70,12 +54,7 @@ public class Server{
                     fileTransmitter.fileReceiver(argument);
                     break;
                 case CD:
-                    if(argument == null){
 
-                    }
-                    else{
-
-                    }
                     break;
                 case QUIT:
                     System.exit(0);
@@ -95,14 +74,82 @@ public class Server{
         FileOutputStream fileToSend;
 
         public FileTransmitter(){
-
+            status = 0;
+            fileSize = 0;
+            file = null;
         }
 
-        public void listSender(String pathname){
+        public void changeDir(String pathname){
+            if(pathname == null){
+                status = 1;
+                toClient.writeInt(status);
+                toClient.writeInt(DEFAULT_FILE_PATH.length());
+                toClient.writeBytes(DEFAULT_FILE_PATH);
+            }
+            else if(pathname.equals(".")){
+                status = 1;
+                toClient.writeInt(status);
+                toClient.writeInt(DEFAULT_FILE_PATH.length());
+                toClient.writeBytes(DEFAULT_FILE_PATH);
+            }
+            else if(pathname.equals("..")){
+                status = 1;
+                toClient.writeInt(status);
+                file = new File(DEFAULT_FILE_PATH);
+                String parent = file.getParent();
+                DEFAULT_FILE_PATH = parent;
+                toClient.writeInt(DEFAULT_FILE_PATH.length());
+                toClient.writeBytes(DEFAULT_FILE_PATH);
+            }
+            else{
+                file = new File(pathname);
+                if(!file.isDirectory()){
+                    status = -1;
+                    toClient.writeBytes("Failed - directory name is invalid\n");
+                }
+                else{
+                    String path = file.getAbsolutePath();
+                    DEFAULT_FILE_PATH = path;
+                    toClient.writeInt(DEFAULT_FILE_PATH.length());
+                    toClient.writeBytes(DEFAULT_FILE_PATH);
+                }
 
+            }
+        }
+
+        public void sendFileList(String pathname){
+            file = new File(argument);
+            if(!file.exists()){
+                status = -1;
+                toClient.writeInt(status);
+                toClient.writeBytes("Failed - directory name is invalid\n");
+            }
+            else{
+                status = 1;
+                toClient.writeInt(status);
+                String[] fileList = dir.list();
+                File[] files = dir.listFiles();
+                String strToSend;
+                for(File fileidx: files){
+                    String str = file.getName();
+
+                    if(file.isDirectory()){
+                        strToSend += str;
+                        strToSend += ", - \n";
+                    } else {
+                        strToSend += str;
+                        strToSend += ", ";
+                        strToSend += file.length();
+                        strToSend += "\n";
+                    }
+                }
+                toClient.writeInt(strToSend.length());
+                toClient.writeBytes(strToSend);
+            }
         }
 
         public void fileReceiver(String pathname){
+            pathname = DEFAULT_FILE_PATH + pathname;
             file = File(pathname);
             if(file.exists()){
                 status = -1;
