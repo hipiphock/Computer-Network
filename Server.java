@@ -41,9 +41,11 @@ public class Server{
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
             
-            String clientCommand = fromClient.readLine();
-            String command = clientCommand.split("\\s")[0];
-            String argument = clientCommand.split("\\s")[1];
+            // String clientCommand = fromClient.readLine();
+            // String command = clientCommand.split("\\s")[0];
+            // String argument = clientCommand.split("\\s")[1];
+            String command = fromClient.read();
+            String argument = fromClient.read();
 
             switch(command){
                 case "LIST":
