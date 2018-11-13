@@ -21,6 +21,8 @@ public class Server{
     public static DataInputStream fromClient;
     public static DataOutputStream toClient;
 
+    public static FileTransmitter fileTransmitter;
+
     public static void main(String[] args) {
         
         // initial setup
@@ -36,7 +38,7 @@ public class Server{
 
         while(true){
             Socket connSocket = welcomeSocket.accept();
-            FileTransmitter fileTransmitter = new FileTransmitter();
+            fileTransmitter = new FileTransmitter();
 
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
@@ -71,7 +73,7 @@ public class Server{
         }
     }
     
-    public class FileTransmitter{
+    public static class FileTransmitter{
 
         int status;
         int fileSize;
@@ -83,6 +85,8 @@ public class Server{
             status = 0;
             fileSize = 0;
             file = null;
+            fileToSend = null;
+            fileReceived = null;
         }
 
         public void changeDir(String pathname){

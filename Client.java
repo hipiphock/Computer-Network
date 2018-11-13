@@ -3,6 +3,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.Math;
 import java.io.IOException;
 import java.lang.String;
 import java.net.Socket;
@@ -74,13 +75,13 @@ public class Client{
         }
     }
 
-    public class FileTransmitter{
+    public static class FileTransmitter{
 
         int status;
         int fileSize;
         File file;
-        FileInputStream fileReceived;
-        FileOutputStream fileToSend;
+        FileInputStream fileToSend;
+        FileOutputStream fileReceived;
 
         public FileTransmitter(){
             status = 0;
@@ -149,12 +150,12 @@ public class Client{
                 System.out.println(fromServer.readUTF());
             }
             else{
-                fileSize = file.length();
+                fileSize = Math.toIntExact(file.length());
                 fileToSend = new FileInputStream(filename);
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int count;
                 while((count = fileToSend.read(buffer)) > 0){
-                    toServer.write(bytes, 0, count);
+                    toServer.write(buffer, 0, count);
                 }
                 System.out.println(fromServer.readUTF());
             }
