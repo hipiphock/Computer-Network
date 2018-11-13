@@ -59,6 +59,8 @@ public class Server{
                     fileTransmitter.changeDir(argument);
                     break;
                 case "QUIT":
+                    welcomeSocket.close();
+                    connSocket.close();
                     System.exit(0);
                 default:
                     System.out.println("wrong input");
