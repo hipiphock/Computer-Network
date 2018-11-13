@@ -3,8 +3,10 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.String;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Client{
@@ -23,7 +25,7 @@ public class Client{
     public static DataOutputStream toServer;
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args){
 
         // initial setup
         host = new String(DEFAULT_IP);
@@ -33,11 +35,12 @@ public class Client{
             portNumber = Integer.parseInt(args[0]);
         }
 
-        FileTransmitter fileTransmitter;
-
         while(true){
             // connect
             clientSocket = new Socket(host, portNumber);
+
+            FileTransmitter fileTransmitter;
+            fileTransmitter= new FileTransmitter();
 
             fromServer = new DataInputStream(clientSocket.getInputStream());
             toServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -49,22 +52,19 @@ public class Client{
             String printValue;
 
             switch(command){
-                case null:
-                    System.out.println("wrong input");
-                    break;
-                case LIST:
+                case "LIST":
                     fileTransmitter.sendListRequest(argument);
                     break;
-                case GET:
+                case "GET":
                     fileTransmitter.fileReceiver(argument);
                     break;
-                case PUT:
+                case "PUT":
                     fileTransmitter.fileSender(argument);
                     break;
-                case CD:
+                case "CD":
                     fileTransmitter.changeDir(argument);
                     break;
-                case QUIT:
+                case "QUIT":
                     clientSocket.close();
                     System.exit(0);
                 default:
@@ -86,6 +86,8 @@ public class Client{
             status = 0;
             fileSize = 0;
             file = null;
+            fileReceived = null;
+            fileToSend = null;
         }
 
         

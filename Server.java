@@ -36,7 +36,7 @@ public class Server{
 
         while(true){
             Socket connSocket = welcomeSocket.accept();
-            fileTransmitter = new FileTransmitter();
+            FileTransmitter fileTransmitter = new FileTransmitter();
 
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
