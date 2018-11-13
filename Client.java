@@ -26,7 +26,7 @@ public class Client{
     public static DataOutputStream toServer;
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws UnknownHostException, IOException{
 
         // initial setup
         host = new String(DEFAULT_IP);
@@ -92,7 +92,7 @@ public class Client{
         }
 
         
-        public void changeDir(String pathname){
+        public void changeDir(String pathname) throws IOException{
             toServer.writeBytes("CD " + pathname);
             status = fromServer.readInt();
             if(status < 0){
@@ -106,7 +106,7 @@ public class Client{
             }
         }
 
-        public void sendListRequest(String pathname){
+        public void sendListRequest(String pathname) throws IOException{
             toServer.writeBytes("LIST " + pathname);
             status = fromServer.readInt();
             if(status < 0){
@@ -119,7 +119,7 @@ public class Client{
             }
         }
 
-        public void fileReceiver(String pathname){
+        public void fileReceiver(String pathname) throws IOException{
             toServer.writeBytes("GET " + pathname);
             status = fromServer.readInt();
             if(status < 0){
@@ -137,7 +137,7 @@ public class Client{
             }
         }
 
-        public void fileSender(String filename){
+        public void fileSender(String filename) throws IOException{
             file = new File(filename);
             if(!file.exists()){
                 System.out.println("No such file exist");

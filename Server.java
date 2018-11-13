@@ -3,6 +3,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.Math;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -23,7 +24,7 @@ public class Server{
 
     public static FileTransmitter fileTransmitter;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         
         // initial setup
         host = new String(DEFAULT_IP);
@@ -89,7 +90,7 @@ public class Server{
             fileReceived = null;
         }
 
-        public void changeDir(String pathname){
+        public void changeDir(String pathname) throws IOException{
             if(pathname == null){
                 status = 1;
                 toClient.writeInt(status);
@@ -127,7 +128,7 @@ public class Server{
             }
         }
 
-        public void sendFileList(String pathname){
+        public void sendFileList(String pathname) throws IOException{
             file = new File(pathname);
             if(!file.exists()){
                 status = -1;
@@ -158,7 +159,7 @@ public class Server{
             }
         }
 
-        public void fileReceiver(String pathname){
+        public void fileReceiver(String pathname) throws IOException{
             pathname = DEFAULT_FILE_PATH + pathname;
             file = new File(pathname);
             if(file.exists()){
@@ -180,7 +181,7 @@ public class Server{
             }
         }
 
-        public void fileSender(String filename){
+        public void fileSender(String filename) throws IOException{
             file = new File(filename);
             if(!file.exists()){
                 status = -1;
