@@ -96,11 +96,11 @@ public class Client{
             status = fromServer.readInt();
             if(status < 0){
                 // error
-                System.out.println(fromServer.read());
+                System.out.println(fromServer.readUTF());
             }
             else{
                 fileSize = fromServer.readInt();
-                DEFAULT_FILE_PATH = fromServer.read();
+                DEFAULT_FILE_PATH = fromServer.readUTF();
                 System.out.println(DEFAULT_FILE_PATH);
             }
         }
@@ -110,11 +110,11 @@ public class Client{
             status = fromServer.readInt();
             if(status < 0){
                 // error
-                System.out.println(fromServer.read());
+                System.out.println(fromServer.readUTF());
             }
             else{
                 fileSize = fromServer.readInt();
-                System.out.println(fromServer.read());
+                System.out.println(fromServer.readUTF());
             }
         }
 
@@ -123,7 +123,7 @@ public class Client{
             status = fromServer.readInt();
             if(status < 0){
                 // error
-                System.out.println(fromServer.read());
+                System.out.println(fromServer.readUTF());
             }
             else{
                 fileSize = fromServer.readInt();
@@ -146,7 +146,7 @@ public class Client{
             status = fromServer.readInt();
             if(status < 0){
                 // error
-                System.out.println(fromServer.read());
+                System.out.println(fromServer.readUTF());
             }
             else{
                 fileSize = file.length();
@@ -156,7 +156,7 @@ public class Client{
                 while((count = fileToSend.read(buffer)) > 0){
                     toServer.write(bytes, 0, count);
                 }
-                System.out.println(fromServer.read());
+                System.out.println(fromServer.readUTF());
             }
         }
     }

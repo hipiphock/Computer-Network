@@ -44,8 +44,8 @@ public class Server{
             // String clientCommand = fromClient.readLine();
             // String command = clientCommand.split("\\s")[0];
             // String argument = clientCommand.split("\\s")[1];
-            String command = fromClient.read();
-            String argument = fromClient.read();
+            String command = fromClient.readUTF();
+            String argument = fromClient.readUTF();
 
             switch(command){
                 case "LIST":
