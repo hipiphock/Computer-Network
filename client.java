@@ -1,64 +1,80 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.lang.String;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.Scanner;
 
-/**
- * 
- * Test client for Blocking IO server
- *
- */
-public class client {
-	public static void main(String[] args) throws IOException {
+public class Client{
 
-		Runnable client = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					new TestClient().startClient();
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		new Thread(client, "client-A").start();
-		new Thread(client, "client-B").start();
-	}
+    public static final String DEFAULT_IP = "127.0.0.1";
+    public static final int DEFAULT_PORTNUM = 2020;
 
-	public void startClient() throws IOException, InterruptedException {
+    public static String ip;
+    public static int portNumber;
 
-		String hostName = "localhost";
-		int portNumber = 4444;
-		String threadName = Thread.currentThread().getName();
-		String[] messages = new String[] { threadName + " > msg1", threadName + " > msg2", threadName + " > msg3", threadName +
-				" > Done" };
+    public static void main(String[] args) {
 
-		try {
-			Socket echoSocket = new Socket(hostName, portNumber);
-			PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+        // initial setup
+        ip = new String(DEFAULT_IP);
+        if(args.length == 0){
+            portNumber = DEFAULT_PORTNUM;
+        } else {
+            portNumber = args[0];
+        }
 
-			for (int i = 0; i < messages.length; i++) {
-				BufferedReader stdIn = new BufferedReader(new StringReader(messages[i]));
-				String userInput;
-				while ((userInput = stdIn.readLine()) != null) {
-					out.println(userInput); // write to server
-					System.out.println("echo: " + in.readLine()); // Wait for the server to
-																	// echo back
-				}
-			}
-		} catch (UnknownHostException e) {
-			System.err.println("Unknown host " + hostName);
-			System.exit(1);
-		} catch (IOException e) {
-			System.err.println("Couldn't get I/O for the connection to " + hostName + ".." + e.toString());
-			System.exit(1);
-		}
-	}
+        while(true){
+            // connect
+            Socket clientSocket = new Socket(ip, portNumber);
 
+            Scanner input = new Scanner(System.in);
+            // System.out.println("connected");
+            String userCommand = input.nextLine();
+            String command = userCommand.split("\\s")[0];
+            String argument = userCommand.split("\\s")[1];
+            String printValue;
+
+            DataInputStream fromServer = new DataInputStream(clientSocket.getInputStream());
+            DataOutputStream toServer = new DataOutputStream(clientSocket.getOutputStream());
+            
+
+            switch(command){
+                case null:
+                    System.out.println("wrong input");
+                    break;
+                case LIST:
+                    toServer.writeBytes(userCommand);
+                    printValue = fromServer.readLine();
+                    System.out.println(printValue);
+                    break;
+                case GET:
+                    File file = new File(argument);
+                    if(file.exists()){
+                        System.out.println("file already exist");
+                    }
+                    else {
+                        toServer.writeBytes(userCommand);
+                        FileOutputStream fileReceived = new FileOutputStream(argument);
+                        byte[] buffer = new byte[BUFFER_SIZE];
+                        int count;
+                        while((count = fromClient.read(buffer)) > 0){
+                            fileReceived.write(buffer, 0, count);
+                        }
+                        fileReceived.close();
+                    }
+                    break;
+                case PUT:
+                    
+                    break;
+                case CD:
+                    toServer.writeBytes(userCommand);
+                    break;
+                case QUIT:
+                    clientSocket.close();
+                    System.exit(0);
+                default:
+                    System.out.println("wrong input");
+                    break;
+            }
+        }
+    }
 }
