@@ -190,6 +190,7 @@ It handles the input given by client with the inner class: `FileTransmitter`
             fileReceived = null;
         }
 ```
+This is the variables of FileTransmitter.
 
 ``` java
         public void changeDir(String pathname) throws IOException{
@@ -226,7 +227,11 @@ It handles the input given by client with the inner class: `FileTransmitter`
 
             }
         }
+```
+This is the method which handles the `CD` command.
+It even handles "." and "..".
 
+``` java
         public void sendFileList(String pathname) throws IOException{
         	if(pathname == ".") pathname = DEFAULT_FILE_PATH;
             file = new File(pathname);
@@ -256,7 +261,11 @@ It handles the input given by client with the inner class: `FileTransmitter`
                 toClient.writeUTF(strToSend);
             }
         }
+```
+This method sends the list of files in current directory.
+It sends it with the form of String.
 
+``` java
         public void fileReceiver(String filename) throws IOException{
         	filename = DEFAULT_FILE_PATH + File.separator + filename;
             file = new File(filename);
@@ -277,7 +286,13 @@ It handles the input given by client with the inner class: `FileTransmitter`
                 toClient.writeUTF(filename + " transferred/ " + fileSize + "bytes\n");
             }
         }
+```
+This method receives the file from client.
+If the file already exist, it sends negative status and error message.
+Else, it gets the file and sends the confirm message.
 
+
+``` java
         public void fileSender(String filename) throws IOException{
             file = new File(filename);
             if(!file.exists()){
@@ -299,3 +314,6 @@ It handles the input given by client with the inner class: `FileTransmitter`
         }
     }
 ```
+This method sends the file from server to client.
+If there's no such file, it sends negative status and error message.
+Else, it sends the file to the client.
