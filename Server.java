@@ -1,5 +1,6 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,8 +49,13 @@ public class Server{
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
 
-        	String command = fromClient.readUTF(); 
-            String argument = fromClient.readUTF();
+            String command = fromClient.readUTF();
+            String argument;
+            try{
+                argument = fromClient.readUTF();
+            } catch(EOFException e){
+                toClient = ".";
+            }
             System.out.println(command);
             System.out.println(argument);
 
