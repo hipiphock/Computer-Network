@@ -9,7 +9,7 @@ This is the FTP Protocol server & client program.
   + `PUT (filename)` puts the file in client.
 * listing current files(ls)
   + `LIST (path)` gets the file list of current working directory.
-  + If (path) is blank, it gets the list of current working directory.
+  + If `(path)` is blank, it gets the list of current working directory.
 * changing directory(cd)
   + `CD (path)` changes the current working directory.
   + If `(path)` is blank, it changes to the current working directory, which is no change.
