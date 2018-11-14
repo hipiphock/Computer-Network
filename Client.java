@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.String;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class Client{
@@ -35,11 +36,12 @@ public class Client{
         } else {
             portNumber = Integer.parseInt(args[0]);
         }
+        DEFAULT_FILE_PATH = Paths.get("").toAbsolutePath().toString();
 
+        clientSocket = new Socket(host, portNumber);
         while(true){
             // connect
-            clientSocket = new Socket(host, portNumber);
-            System.out.println("connected with server");
+            System.out.println("Write Command: ");
 
             fileTransmitter= new FileTransmitter();
 
@@ -57,7 +59,7 @@ public class Client{
 
             switch(command){
                 case "LIST":
-                    if(argument == null) break;
+                	if(argument == null) argument = ".";
                     fileTransmitter.sendListRequest(argument);
                     break;
                 case "GET":
@@ -69,11 +71,13 @@ public class Client{
                     fileTransmitter.fileSender(argument);
                     break;
                 case "CD":
+                	if(argument == null) argument = ".";
                     fileTransmitter.changeDir(argument);
                     break;
                 case "QUIT":
                 	input.close();
                     clientSocket.close();
+                    System.out.println("quit");
                     System.exit(0);
                 default:
                     System.out.println("wrong input");
@@ -116,8 +120,7 @@ public class Client{
             }
             else{
                 fileSize = fromServer.readInt();
-                DEFAULT_FILE_PATH = fromServer.readUTF();	// problem
-                System.out.println(DEFAULT_FILE_PATH);
+                System.out.println(fromServer.readUTF());
             }
         }
 
@@ -157,6 +160,9 @@ public class Client{
                 while((count = fromServer.read(buffer)) > 0){
                     fileReceived.write(buffer, 0, count);
                 }
+                fileReceived.flush();
+                System.out.println("dosmas");
+                System.out.println(fromServer.readUTF());
             }
         }
 
@@ -178,6 +184,7 @@ public class Client{
             }
             else{
                 fileSize = Math.toIntExact(file.length());
+                toServer.writeInt(fileSize);
                 fileToSend = new FileInputStream(filename);
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int count;

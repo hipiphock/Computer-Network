@@ -38,16 +38,16 @@ public class Server{
             portNumber = Integer.parseInt(args[0]);
         }
         DEFAULT_FILE_PATH = Paths.get("").toAbsolutePath().toString();
+        
         welcomeSocket = new ServerSocket(portNumber);
+        connSocket = welcomeSocket.accept();
 
         while(true){
         	// connect
-            connSocket = welcomeSocket.accept();
-            System.out.println("Connected with client");
+            System.out.println("Receiving...");
             
             fileTransmitter = new FileTransmitter();
             
-            // 아니 생각해보니까 클라에서 파싱해서 주면 알아서 받으면 되는건데 하
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
 
@@ -102,13 +102,7 @@ public class Server{
         }
 
         public void changeDir(String pathname) throws IOException{
-            if(pathname == null){
-                status = 1;
-                toClient.writeInt(status);
-                toClient.writeInt(DEFAULT_FILE_PATH.length());
-                toClient.writeUTF(DEFAULT_FILE_PATH);
-            }
-            else if(pathname.equals(".")){
+            if(pathname.equals(".")){
                 status = 1;
                 toClient.writeInt(status);
                 toClient.writeInt(DEFAULT_FILE_PATH.length());
@@ -127,9 +121,12 @@ public class Server{
                 file = new File(pathname);
                 if(!file.isDirectory()){
                     status = -1;
-                    toClient.writeBytes("Failed - directory name is invalid\n");
+                    toClient.writeInt(status);
+                    toClient.writeUTF("Failed - directory name is invalid\n");
                 }
                 else{
+                	status = 1;
+                	toClient.writeInt(status);
                     String path = file.getAbsolutePath();
                     DEFAULT_FILE_PATH = path;
                     toClient.writeInt(DEFAULT_FILE_PATH.length());
@@ -140,6 +137,7 @@ public class Server{
         }
 
         public void sendFileList(String pathname) throws IOException{
+        	if(pathname == ".") pathname = DEFAULT_FILE_PATH;
             file = new File(pathname);
             if(!file.exists()){
                 status = -1;
@@ -152,14 +150,14 @@ public class Server{
                 File[] files = file.listFiles();
                 String strToSend = new String();
                 for(File fileidx: files){
-                    String str = file.getName();
-                    if(file.isDirectory()){
+                    String str = fileidx.getName();
+                    if(fileidx.isDirectory()){
                         strToSend += str;
                         strToSend += ", - \n";
                     } else {
                         strToSend += str;
                         strToSend += ", ";
-                        strToSend += file.length();
+                        strToSend += fileidx.length();
                         strToSend += "\n";
                     }
                 }
@@ -168,25 +166,25 @@ public class Server{
             }
         }
 
-        public void fileReceiver(String pathname) throws IOException{
-            pathname = DEFAULT_FILE_PATH + pathname;
-            file = new File(pathname);
+        public void fileReceiver(String filename) throws IOException{
+            filename = DEFAULT_FILE_PATH + filename;
+            file = new File(filename);
             if(file.exists()){
                 status = -1;
                 toClient.writeInt(status);
-                toClient.writeBytes("File already exist\n.");
+                toClient.writeUTF("File already exist\n.");
             }
             else{
                 status = 1;
                 toClient.writeInt(status);
                 fileSize = fromClient.readInt();
-                fileReceived = new FileOutputStream(pathname);
+                fileReceived = new FileOutputStream(filename);
                 byte[] buffer = new byte[BUFFER_SIZE];
                 int count;
                 while((count = fromClient.read(buffer)) > 0){
                     fileReceived.write(buffer, 0, count);
                 }
-                toClient.writeBytes(pathname + " transferred/ " + fileSize + "bytes\n");
+                toClient.writeUTF(filename + " transferred/ " + fileSize + "bytes\n");
             }
         }
 
@@ -195,7 +193,7 @@ public class Server{
             if(!file.exists()){
                 status = -1;
                 toClient.writeInt(status);
-                toClient.writeBytes("Such file does not exist!\n");
+                toClient.writeUTF("Such file does not exist!\n");
             }
             else{
                 status = 1;
@@ -208,7 +206,7 @@ public class Server{
                 while((count = fileToSend.read(buffer)) > 0){
                     toClient.write(buffer, 0, count);
                 }
-                toClient.writeBytes("Received " + filename + "/ " + fileSize + "bytes\n");
+                toClient.writeUTF("Received " + filename + "/ " + fileSize + "bytes\n");
             }
         }
     }
