@@ -36,3 +36,12 @@ java Client
 ```
 
 **Make sure that the Server's working directory is different from Client**
+
+# Documentation
+
+## Client
+The client sends order to the server, and wait for response.
+It has basically 4 command options(excluding QUIT), which is GET, PUT, LIST, and CD.
+
+## Servr
+The server receives command from client and execute the command.
