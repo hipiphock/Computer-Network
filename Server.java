@@ -8,13 +8,14 @@ import java.io.IOException;
 import java.lang.Math;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Paths;
 
 public class Server{
 
     public static final String DEFAULT_IP = "127.0.0.1";
     public static final int DEFAULT_PORTNUM = 2020;
     public static final int BUFFER_SIZE = 4096;
-    public static String DEFAULT_FILE_PATH = "/home/hingook/ftp/";
+    public static String DEFAULT_FILE_PATH;
     // hingook can be changed to your username
 
     public static String host;
@@ -36,6 +37,7 @@ public class Server{
         } else {
             portNumber = Integer.parseInt(args[0]);
         }
+        DEFAULT_FILE_PATH = Paths.get("").toAbsolutePath().toString();
         welcomeSocket = new ServerSocket(portNumber);
 
         while(true){
