@@ -16,7 +16,6 @@ public class Server{
     public static final int DEFAULT_PORTNUM = 2020;
     public static final int BUFFER_SIZE = 4096;
     public static String DEFAULT_FILE_PATH;
-    // hingook can be changed to your username
 
     public static String host;
     public static int portNumber;
@@ -167,7 +166,7 @@ public class Server{
         }
 
         public void fileReceiver(String filename) throws IOException{
-            filename = DEFAULT_FILE_PATH + filename;
+        	filename = DEFAULT_FILE_PATH + File.separator + filename;
             file = new File(filename);
             if(file.exists()){
                 status = -1;
@@ -179,11 +178,10 @@ public class Server{
                 toClient.writeInt(status);
                 fileSize = fromClient.readInt();
                 fileReceived = new FileOutputStream(filename);
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int count;
-                while((count = fromClient.read(buffer)) > 0){
-                    fileReceived.write(buffer, 0, count);
-                }
+                byte[] buffer = new byte[fileSize];
+                fromClient.read(buffer, 0, fileSize);
+                fileReceived.write(buffer, 0, fileSize);
+                fileReceived.flush();
                 toClient.writeUTF(filename + " transferred/ " + fileSize + "bytes\n");
             }
         }
@@ -201,11 +199,9 @@ public class Server{
                 fileSize = Math.toIntExact(file.length());
                 toClient.writeInt(fileSize);
                 fileToSend = new FileInputStream(filename);
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int count;
-                while((count = fileToSend.read(buffer)) > 0){
-                    toClient.write(buffer, 0, count);
-                }
+                byte[] buffer = new byte[fileSize];
+                fileToSend.read(buffer, 0, fileSize);
+                toClient.write(buffer, 0, fileSize);
                 toClient.writeUTF("Received " + filename + "/ " + fileSize + "bytes\n");
             }
         }

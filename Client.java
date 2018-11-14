@@ -155,13 +155,10 @@ public class Client{
             else{
                 fileSize = fromServer.readInt();
                 fileReceived = new FileOutputStream(pathname);
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int count;
-                while((count = fromServer.read(buffer)) > 0){
-                    fileReceived.write(buffer, 0, count);
-                }
+                byte[] buffer = new byte[fileSize];
+                fromServer.read(buffer, 0, fileSize);
+                fileReceived.write(buffer, 0, fileSize);
                 fileReceived.flush();
-                System.out.println("dosmas");
                 System.out.println(fromServer.readUTF());
             }
         }
@@ -186,11 +183,10 @@ public class Client{
                 fileSize = Math.toIntExact(file.length());
                 toServer.writeInt(fileSize);
                 fileToSend = new FileInputStream(filename);
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int count;
-                while((count = fileToSend.read(buffer)) > 0){
-                    toServer.write(buffer, 0, count);
-                }
+                byte[] buffer = new byte[fileSize];
+                fileToSend.read(buffer, 0, fileSize);
+                toServer.write(buffer, 0, fileSize);
+                toServer.flush();
                 System.out.println(fromServer.readUTF());
             }
         }
