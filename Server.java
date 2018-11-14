@@ -56,7 +56,7 @@ public class Server{
             try{
                 argument = fromClient.readUTF();
             } catch(EOFException e){
-                toClient = ".";
+                argument = ".";
             }
             System.out.println(command);
             System.out.println(argument);
@@ -149,7 +149,6 @@ public class Server{
             else{
                 status = 1;
                 toClient.writeInt(status);
-                String[] fileList = file.list();
                 File[] files = file.listFiles();
                 String strToSend = new String();
                 for(File fileidx: files){
