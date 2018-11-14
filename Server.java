@@ -18,10 +18,12 @@ public class Server{
 
     public static String host;
     public static int portNumber;
+    
+    public static ServerSocket welcomeSocket;
+    public static Socket connSocket;
 
     public static DataInputStream fromClient;
     public static DataOutputStream toClient;
-
     public static FileTransmitter fileTransmitter;
 
     public static void main(String[] args) throws IOException {
@@ -33,22 +35,23 @@ public class Server{
         } else {
             portNumber = Integer.parseInt(args[0]);
         }
-        
-        // connect
-        ServerSocket welcomeSocket = new ServerSocket(portNumber);
+        welcomeSocket = new ServerSocket(portNumber);
 
         while(true){
-            Socket connSocket = welcomeSocket.accept();
+        	// connect
+            connSocket = welcomeSocket.accept();
+            System.out.println("Connected with client");
+            
             fileTransmitter = new FileTransmitter();
-
+            
+            // 아니 생각해보니까 클라에서 파싱해서 주면 알아서 받으면 되는건데 하
             fromClient = new DataInputStream(connSocket.getInputStream());
             toClient = new DataOutputStream(connSocket.getOutputStream());
-            
-            // String clientCommand = fromClient.readLine();
-            // String command = clientCommand.split("\\s")[0];
-            // String argument = clientCommand.split("\\s")[1];
-            String command = fromClient.readUTF();
+
+        	String command = fromClient.readUTF(); 
             String argument = fromClient.readUTF();
+            System.out.println(command);
+            System.out.println(argument);
 
             switch(command){
                 case "LIST":
@@ -95,13 +98,13 @@ public class Server{
                 status = 1;
                 toClient.writeInt(status);
                 toClient.writeInt(DEFAULT_FILE_PATH.length());
-                toClient.writeBytes(DEFAULT_FILE_PATH);
+                toClient.writeUTF(DEFAULT_FILE_PATH);
             }
             else if(pathname.equals(".")){
                 status = 1;
                 toClient.writeInt(status);
                 toClient.writeInt(DEFAULT_FILE_PATH.length());
-                toClient.writeBytes(DEFAULT_FILE_PATH);
+                toClient.writeUTF(DEFAULT_FILE_PATH);
             }
             else if(pathname.equals("..")){
                 status = 1;
@@ -110,7 +113,7 @@ public class Server{
                 String parent = file.getParent();
                 DEFAULT_FILE_PATH = parent;
                 toClient.writeInt(DEFAULT_FILE_PATH.length());
-                toClient.writeBytes(DEFAULT_FILE_PATH);
+                toClient.writeUTF(DEFAULT_FILE_PATH);
             }
             else{
                 file = new File(pathname);
@@ -122,7 +125,7 @@ public class Server{
                     String path = file.getAbsolutePath();
                     DEFAULT_FILE_PATH = path;
                     toClient.writeInt(DEFAULT_FILE_PATH.length());
-                    toClient.writeBytes(DEFAULT_FILE_PATH);
+                    toClient.writeUTF(DEFAULT_FILE_PATH);
                 }
 
             }
@@ -133,7 +136,7 @@ public class Server{
             if(!file.exists()){
                 status = -1;
                 toClient.writeInt(status);
-                toClient.writeBytes("Failed - directory name is invalid\n");
+                toClient.writeUTF("Failed - directory name is invalid\n");
             }
             else{
                 status = 1;
@@ -143,7 +146,6 @@ public class Server{
                 String strToSend = new String();
                 for(File fileidx: files){
                     String str = file.getName();
-
                     if(file.isDirectory()){
                         strToSend += str;
                         strToSend += ", - \n";
@@ -155,7 +157,7 @@ public class Server{
                     }
                 }
                 toClient.writeInt(strToSend.length());
-                toClient.writeBytes(strToSend);
+                toClient.writeUTF(strToSend);
             }
         }
 

@@ -22,8 +22,8 @@ public class Client{
     public static int portNumber;
 
     public static Socket clientSocket;
-    public static DataInputStream fromServer;
-    public static DataOutputStream toServer;
+    
+    public static FileTransmitter fileTransmitter;
 
 
     public static void main(String[] args) throws UnknownHostException, IOException{
@@ -39,33 +39,40 @@ public class Client{
         while(true){
             // connect
             clientSocket = new Socket(host, portNumber);
+            System.out.println("connected with server");
 
-            FileTransmitter fileTransmitter;
             fileTransmitter= new FileTransmitter();
-
-            fromServer = new DataInputStream(clientSocket.getInputStream());
-            toServer = new DataOutputStream(clientSocket.getOutputStream());
 
             Scanner input = new Scanner(System.in);
             String userCommand = input.nextLine();
-            String command = userCommand.split("\\s")[0];
-            String argument = userCommand.split("\\s")[1];
-            String printValue;
+            String command;
+            String argument;
+            try{
+            	command = userCommand.split("\\s")[0];
+                argument = userCommand.split("\\s")[1];
+            } catch(ArrayIndexOutOfBoundsException e) {
+            	command = userCommand;
+            	argument = null;
+            }
 
             switch(command){
                 case "LIST":
+                    if(argument == null) break;
                     fileTransmitter.sendListRequest(argument);
                     break;
                 case "GET":
+                    if(argument == null) break;
                     fileTransmitter.fileReceiver(argument);
                     break;
                 case "PUT":
+                    if(argument == null) break;
                     fileTransmitter.fileSender(argument);
                     break;
                 case "CD":
                     fileTransmitter.changeDir(argument);
                     break;
                 case "QUIT":
+                	input.close();
                     clientSocket.close();
                     System.exit(0);
                 default:
@@ -75,6 +82,7 @@ public class Client{
         }
     }
 
+    // inner class for transmitting files
     public static class FileTransmitter{
 
         int status;
@@ -82,6 +90,8 @@ public class Client{
         File file;
         FileInputStream fileToSend;
         FileOutputStream fileReceived;
+        DataInputStream fromServer;
+        DataOutputStream toServer;
 
         public FileTransmitter(){
             status = 0;
@@ -89,11 +99,16 @@ public class Client{
             file = null;
             fileReceived = null;
             fileToSend = null;
+            fromServer = null;
+            toServer = null;
         }
 
-        
+        // change the server's working directory
         public void changeDir(String pathname) throws IOException{
-            toServer.writeBytes("CD " + pathname);
+            fromServer = new DataInputStream(clientSocket.getInputStream());
+            toServer = new DataOutputStream(clientSocket.getOutputStream());
+            toServer.writeUTF("CD");
+            toServer.writeUTF(pathname);
             status = fromServer.readInt();
             if(status < 0){
                 // error
@@ -101,13 +116,17 @@ public class Client{
             }
             else{
                 fileSize = fromServer.readInt();
-                DEFAULT_FILE_PATH = fromServer.readUTF();
+                DEFAULT_FILE_PATH = fromServer.readUTF();	// problem
                 System.out.println(DEFAULT_FILE_PATH);
             }
         }
 
+        // get the list of files in the path
         public void sendListRequest(String pathname) throws IOException{
-            toServer.writeBytes("LIST " + pathname);
+            fromServer = new DataInputStream(clientSocket.getInputStream());
+            toServer = new DataOutputStream(clientSocket.getOutputStream());
+            toServer.writeUTF("LIST");
+            toServer.writeUTF(pathname);
             status = fromServer.readInt();
             if(status < 0){
                 // error
@@ -119,8 +138,12 @@ public class Client{
             }
         }
 
+        // receive(get) file from server
         public void fileReceiver(String pathname) throws IOException{
-            toServer.writeBytes("GET " + pathname);
+            fromServer = new DataInputStream(clientSocket.getInputStream());
+            toServer = new DataOutputStream(clientSocket.getOutputStream());
+            toServer.writeUTF("GET");
+            toServer.writeUTF(pathname);
             status = fromServer.readInt();
             if(status < 0){
                 // error
@@ -137,13 +160,17 @@ public class Client{
             }
         }
 
+        // send(put) file to server
         public void fileSender(String filename) throws IOException{
+            fromServer = new DataInputStream(clientSocket.getInputStream());
+            toServer = new DataOutputStream(clientSocket.getOutputStream());
             file = new File(filename);
             if(!file.exists()){
                 System.out.println("No such file exist");
                 return;
             }
-            toServer.writeBytes("PUT " + filename);
+            toServer.writeUTF("PUT");
+            toServer.writeUTF(filename);
             status = fromServer.readInt();
             if(status < 0){
                 // error
