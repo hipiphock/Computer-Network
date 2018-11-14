@@ -35,7 +35,7 @@ public class Server{
         }
         
         // connect
-        ServerSocket welcomeSocket = new ServerSocket();
+        ServerSocket welcomeSocket = new ServerSocket(portNumber);
 
         while(true){
             Socket connSocket = welcomeSocket.accept();
