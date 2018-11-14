@@ -1,14 +1,6 @@
 # Computer-Network
-ENE 4019 in Hanyang University
+This is the assignment of Computer Network class, ENE 4019 in Hanyang University.
 
-This is the FTP Protocol server & client program.
+Assignment 1 deals with FTP protocol, with blocking IO.
 
-# Feature
-
-* upload / download feature
-
-* listing current files
-
-* changing directory
-
-# Limitation
+Assignment 2 deals with FTP protocol, with multi-threads, and blocking IO.
