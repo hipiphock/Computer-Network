@@ -5,15 +5,16 @@ This is the FTP Protocol server & client program.
 # Feature
 
 * upload / download feature
-  +`GET (filename)` gets the file in server.
-  +`PUT (filename)` puts the file in client.
+  + `GET (filename)` gets the file in server.
+  + `PUT (filename)` puts the file in client.
 * listing current files(ls)
-  +`LIST (path)` gets the file list of current working directory.
-  +If (path) is blank, it gets the list of current working directory.
+  + `LIST (path)` gets the file list of current working directory.
+  + If (path) is blank, it gets the list of current working directory.
 * changing directory(cd)
-  +`CD (path)` changes the current working directory.
-  +If `(path)` is blank, it changes to the current working directory, which is no change.
-  +It supports `.` and `..`, just like bash.
+  + `CD (path)` changes the current working directory.
+  + If `(path)` is blank, it changes to the current working directory, which is no change.
+  + It supports `.` and `..`, just like bash.
+  
 # Limitation
 
 * It may not transfer files with big size
