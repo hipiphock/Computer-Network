@@ -176,11 +176,16 @@ public class Server{
     	
     	private Socket threadSocket;
 
+    	protected Thread runningThread = null;
     	public TransferThread(Socket socket){
     		threadSocket = socket;
     	}
         public void run(){
             
+        	synchronized(this){
+        		this.runningThread = Thread.currentThread();
+        	}
+        	
             System.out.println("Receiving...");
             
             fileTransmitter = new FileTransmitter();
