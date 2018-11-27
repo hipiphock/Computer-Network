@@ -16,8 +16,7 @@ public class Client{
     public static final String DEFAULT_IP = "127.0.0.1";
     public static final int DEFAULT_PORTNUM = 2020;
     public static final int BUFFER_SIZE = 4096;
-    public static String DEFAULT_FILE_PATH = "/home/hingook/ftp/";
-    // hingook can be changed to your username
+    public static String DEFAULT_FILE_PATH;
 
     public static String host;
     public static int portNumber;
@@ -42,6 +41,7 @@ public class Client{
         	
             // connect
         	clientSocket = new Socket(host, portNumber);
+        	
             System.out.println("Write Command: ");
 
             fileTransmitter= new FileTransmitter();

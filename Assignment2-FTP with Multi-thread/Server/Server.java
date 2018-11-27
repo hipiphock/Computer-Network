@@ -15,7 +15,7 @@ public class Server{
 
     private static final String DEFAULT_IP = "127.0.0.1";
     private static final int DEFAULT_PORTNUM = 2020;
-    private static final int THREAD_NUM = 5;
+    private static final int THREAD_NUM = 10;
     private static String DEFAULT_FILE_PATH;
 
     public static String host;
@@ -37,13 +37,15 @@ public class Server{
             portNumber = Integer.parseInt(args[0]);
         }
         DEFAULT_FILE_PATH = Paths.get("").toAbsolutePath().toString();
-        
         // starting point
-        ServerSocket welcomeSocket = new ServerSocket(portNumber);
 
+        ServerSocket welcomeSocket = new ServerSocket(portNumber);
         while(true){
             // thread
-            threadPool.execute(new TransferThread(welcomeSocket.accept()));
+        	TransferThread threadToRun = new TransferThread(welcomeSocket.accept());
+        	synchronized(threadToRun){
+        		threadPool.execute(threadToRun);
+        	}
         }
     }
     
@@ -172,7 +174,8 @@ public class Server{
 
     public static class TransferThread implements Runnable{
     	
-    	private Socket threadSocket; 
+    	private Socket threadSocket;
+
     	public TransferThread(Socket socket){
     		threadSocket = socket;
     	}
@@ -191,21 +194,16 @@ public class Server{
 			}
 
             String command = null;
+            String argument = null;
 			try {
 				command = fromClient.readUTF();
+            	argument = fromClient.readUTF();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-            String argument = null;
-            try {
-            	argument = fromClient.readUTF();
-            } catch (IOException e) {
-            	// TODO Auto-generated catch block
-            	e.printStackTrace();
-            }
-            System.out.println(command);
-            System.out.println(argument);
+            System.out.println("From Client: " + command);
+            System.out.println("From Client: " + argument);
 
             switch(command){
                 case "LIST":
@@ -247,11 +245,17 @@ public class Server{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                    System.exit(0);
                 default:
                     System.out.println("wrong input");
                     break;
             }
+            try {
+				threadSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            System.out.println("Finished Connection");
         }
     }
 }
