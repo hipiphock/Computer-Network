@@ -1,6 +1,5 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -21,8 +20,6 @@ public class Server{
 
     public static String host;
     public static int portNumber;
-
-    public static Socket connSocket;
 
     public static DataInputStream fromClient;
     public static DataOutputStream toClient;
@@ -45,10 +42,8 @@ public class Server{
         ServerSocket welcomeSocket = new ServerSocket(portNumber);
 
         while(true){
-            // connect
-            connSocket = welcomeSocket.accept();
             // thread
-            threadPool.execute(new TransferThread(connSocket));
+            threadPool.execute(new TransferThread(welcomeSocket.accept()));
         }
     }
     
@@ -188,8 +183,8 @@ public class Server{
             fileTransmitter = new FileTransmitter();
             
             try {
-				fromClient = new DataInputStream(connSocket.getInputStream());
-	            toClient = new DataOutputStream(connSocket.getOutputStream());
+				fromClient = new DataInputStream(threadSocket.getInputStream());
+	            toClient = new DataOutputStream(threadSocket.getOutputStream());
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -247,7 +242,7 @@ public class Server{
                     break;
                 case "QUIT":
 				try {
-					connSocket.close();
+					threadSocket.close();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -77,9 +77,7 @@ public class Client{
                     break;
                 case "QUIT":
                 	input.close();
-                    clientSocket.close();
-                    System.out.println("quit");
-                    System.exit(0);
+                	fileTransmitter.quit();
                 default:
                     System.out.println("wrong input");
                     break;
@@ -190,6 +188,15 @@ public class Client{
                 toServer.flush();
                 System.out.println(fromServer.readUTF());
             }
+        }
+        
+        public void quit() throws IOException{
+        	toServer = new DataOutputStream(clientSocket.getOutputStream());
+        	toServer.writeUTF("QUIT");
+        	toServer.writeUTF("QUIT");
+            clientSocket.close();
+            System.out.println("quit");
+            System.exit(0);
         }
     }
 }
