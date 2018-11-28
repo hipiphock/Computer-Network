@@ -415,7 +415,7 @@ public static class TransferThread implements Runnable{
         }
     }
 ```
-각각의 thread마다의 concurrency를 위해서 synchronized를 사용해서 thread를 잠근 뒤에, 그 이후에 각 thread에서 file transfer를 하였습니다.
+For the concurrency, use "synchronized" to lock the thread, and transfer file from each thread.
 
 ``` java
         ServerSocket welcomeSocket = new ServerSocket(portNumber);
@@ -428,4 +428,4 @@ public static class TransferThread implements Runnable{
         }
     }
 ```
-main function에 있는 code part입니다.
+This is the running code part in main function.
