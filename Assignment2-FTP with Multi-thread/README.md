@@ -37,10 +37,6 @@ javac Client.java
 java Client
 ```
 
-# 
-## Client side
-
-
 **Make sure that the Server's working directory is different from Client**
 
 # Documentation
