@@ -1,4 +1,4 @@
-# FTP Protocol with Blocking IO
+# FTP Protocol with Multithread
 
 This is the FTP Protocol server & client program.
 
