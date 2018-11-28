@@ -1,8 +1,9 @@
 # FTP Protocol with Multithread
 
-This is the FTP Protocol server & client program.
+This is the FTP Protocol server & client program with multithread feature.
 
 # Feature
+* **Multithread is now available**
 
 * upload / download feature
   + `GET (filename)` gets the file in server.
@@ -19,12 +20,13 @@ This is the FTP Protocol server & client program.
 
 * It may not transfer files with big size
 
-* There may be problem with shutdown
+* There may be problem with shutdown.
+
+* There may be problem with thread.
 
 # Building
 
 It can be easily compiled, just like other java files.
-
 ``` console
 javac Server.java
 java Server
@@ -34,6 +36,10 @@ java Server
 javac Client.java
 java Client
 ```
+
+# 
+## Client side
+
 
 **Make sure that the Server's working directory is different from Client**
 
@@ -317,3 +323,113 @@ Else, it gets the file and sends the confirm message.
 This method sends the file from server to client.
 If there's no such file, it sends negative status and error message.
 Else, it sends the file to the client.
+
+### Multithread Implementation
+
+``` java
+public static class TransferThread implements Runnable{
+    	
+    	private Socket threadSocket;
+
+    	protected Thread runningThread = null;
+    	public TransferThread(Socket socket){
+    		threadSocket = socket;
+    	}
+        public void run(){
+            
+        	synchronized(this){
+        		this.runningThread = Thread.currentThread();
+        	}
+        	
+            System.out.println("Receiving...");
+            
+            fileTransmitter = new FileTransmitter();
+            
+            try {
+				fromClient = new DataInputStream(threadSocket.getInputStream());
+	            toClient = new DataOutputStream(threadSocket.getOutputStream());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+            String command = null;
+            String argument = null;
+			try {
+				command = fromClient.readUTF();
+            	argument = fromClient.readUTF();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            System.out.println("From Client: " + command);
+            System.out.println("From Client: " + argument);
+
+            switch(command){
+                case "LIST":
+				try {
+					fileTransmitter.sendFileList(argument);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                    break;
+                case "GET":
+				try {
+					fileTransmitter.fileSender(argument);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                    break;
+                case "PUT":
+				try {
+					fileTransmitter.fileReceiver(argument);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                    break;
+                case "CD":
+				try {
+					fileTransmitter.changeDir(argument);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                    break;
+                case "QUIT":
+				try {
+					threadSocket.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+                default:
+                    System.out.println("wrong input");
+                    break;
+            }
+            try {
+				threadSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            System.out.println("Finished Connection");
+        }
+    }
+```
+각각의 thread마다의 concurrency를 위해서 synchronized를 사용해서 thread를 잠근 뒤에, 그 이후에 각 thread에서 file transfer를 하였습니다.
+
+``` java
+        ServerSocket welcomeSocket = new ServerSocket(portNumber);
+        while(true){
+            // thread
+        	TransferThread threadToRun = new TransferThread(welcomeSocket.accept());
+        	synchronized(threadToRun){
+        		threadPool.execute(threadToRun);
+        	}
+        }
+    }
+```
+main function에 있는 code part입니다.
