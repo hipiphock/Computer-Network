@@ -416,6 +416,7 @@ public static class TransferThread implements Runnable{
     }
 ```
 For the concurrency, use "synchronized" to lock the thread, and transfer file from each thread.
+Each thread is independent with other, so concurrency is safe.
 
 ``` java
         ServerSocket welcomeSocket = new ServerSocket(portNumber);
