@@ -1,4 +1,4 @@
-# FTP Protocol with Multithread
+# File Transfer Protocol with Multithread
 
 This is the FTP Protocol server & client program with multithread feature.
 
