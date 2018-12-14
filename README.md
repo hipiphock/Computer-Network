@@ -1,6 +1,6 @@
 # File Transfer Protocol with Multithread
 
-This is the FTP Protocol server & client program with multithread feature.
+This is the FTP server & client program with multithread feature.
 
 # Feature
 * **Multithread is now available**
